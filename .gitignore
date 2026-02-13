@@ -1,0 +1,14 @@
+# 本番の Apps Script URL をコミットしない
+api/config.php
+
+# 環境変数（DB・SMTP・JWT の設定を含む）
+.env
+.env.local
+.env.*.local
+
+# 依存関係・ビルド成果物
+node_modules/
+dist/
+
+# OS
+.DS_Store
