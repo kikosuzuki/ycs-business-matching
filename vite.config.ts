@@ -10,8 +10,8 @@ export default defineConfig(({ mode }) => {
         port: 3000,
         host: '0.0.0.0',
         proxy: {
-          '/api': {
-            target: 'https://ycscampaign.com/match',
+          '/match/api': {
+            target: 'https://ycscampaign.com',
             changeOrigin: true,
             secure: true,
           },
