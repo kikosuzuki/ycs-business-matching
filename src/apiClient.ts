@@ -156,6 +156,15 @@ export async function apiUsers(params?: {
   return { ...data, ok, status };
 }
 
+/** ユーザーの role を変更する（管理者のみ） */
+export async function apiUpdateRole(userId: number, role: 'admin' | 'user'): Promise<{ success?: boolean; error?: string } & { ok: boolean; status: number }> {
+  const { data, ok, status } = await request<{ success?: boolean; error?: string }>('update-role.php', {
+    method: 'POST',
+    body: { userId, role },
+  });
+  return { ...data, ok, status };
+}
+
 /** 退会者削除（管理者のみ）。自分自身・最後の管理者は削除不可。 */
 export async function apiDeleteUser(userId: number): Promise<{ success?: boolean; error?: string } & { ok: boolean; status: number }> {
   const { data, ok, status } = await request<{ success?: boolean; error?: string }>('delete-user.php', {

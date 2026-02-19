@@ -10,6 +10,7 @@ import {
   apiMembers,
   apiUsers,
   apiDeleteUser,
+  apiUpdateRole,
   apiForgotPassword,
   apiResetPassword,
   type UserProfile as ApiUserProfile,
@@ -46,6 +47,7 @@ interface UserProfile {
   interestScore?: number;
   image?: string;
   profileImage?: string | null;
+  role?: string;
   registeredAt: string;
 }
 
@@ -73,6 +75,7 @@ interface FormDataState {
   message: string;
   mission: string;
   agreedToTerms: boolean;
+  agreedToPrivacy: boolean;
   profileImage: File | null;
   profileImagePreview: string | null;
   [key: string]: any;
@@ -144,6 +147,7 @@ const BusinessMatchingApp: React.FC = () => {
     message: '',
     mission: '',
     agreedToTerms: false,
+    agreedToPrivacy: false,
     profileImage: null,
     profileImagePreview: null
   });
@@ -525,8 +529,8 @@ const BusinessMatchingApp: React.FC = () => {
 
     const handleNextStep = () => {
       if (registrationStep === 1) {
-        if (!formData.name || !formData.email || !formData.password || !formData.passwordConfirm) {
-          alert('必須項目を入力してください');
+        if (!formData.name || !formData.email || !formData.password || !formData.passwordConfirm || !formData.phone) {
+          alert('必須項目（お名前、メールアドレス、パスワード、電話番号）をすべて入力してください');
           return;
         }
         if (!validatePassword()) {
@@ -534,6 +538,16 @@ const BusinessMatchingApp: React.FC = () => {
         }
         if (!formData.agreedToTerms) {
           alert('利用規約に同意してください');
+          return;
+        }
+        if (!formData.agreedToPrivacy) {
+          alert('プライバシーポリシーに同意してください');
+          return;
+        }
+      }
+      if (registrationStep === 2) {
+        if (!formData.businessName || !formData.industry) {
+          alert('必須項目（ビジネス名、業種）をすべて入力してください');
           return;
         }
       }
@@ -742,17 +756,27 @@ const BusinessMatchingApp: React.FC = () => {
                 </div>
               </div>
 
-              <div className="border-t pt-4">
+              <div className="border-t pt-4 space-y-3">
                 <div className="flex items-start">
-                  <input 
+                  <input
                     type="checkbox"
                     checked={formData.agreedToTerms}
                     onChange={(e) => setFormData(prev => ({ ...prev, agreedToTerms: e.target.checked }))}
                     className="mr-3 mt-1"
                   />
                   <label className="text-sm">
-                    <a href="/match/terms.html" target="_blank" rel="noopener noreferrer" className="text-purple-600 hover:underline">利用規約</a>と
-                    <a href="/match/privacy.html" target="_blank" rel="noopener noreferrer" className="text-purple-600 hover:underline">プライバシーポリシー</a>に同意します *
+                    <a href="/match/terms.html" target="_blank" rel="noopener noreferrer" className="text-purple-600 hover:underline">利用規約</a>に同意します <span className="text-red-500">*</span>
+                  </label>
+                </div>
+                <div className="flex items-start">
+                  <input
+                    type="checkbox"
+                    checked={formData.agreedToPrivacy}
+                    onChange={(e) => setFormData(prev => ({ ...prev, agreedToPrivacy: e.target.checked }))}
+                    className="mr-3 mt-1"
+                  />
+                  <label className="text-sm">
+                    <a href="/match/privacy.html" target="_blank" rel="noopener noreferrer" className="text-purple-600 hover:underline">プライバシーポリシー</a>に同意します <span className="text-red-500">*</span>
                   </label>
                 </div>
               </div>
@@ -843,7 +867,7 @@ const BusinessMatchingApp: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-semibold mb-2">提供できる価値・スキル</label>
+                <label className="block text-sm font-semibold mb-2">提供できる価値・スキル <span className="text-red-500">*</span></label>
                 <div className="flex gap-2 mb-2">
                   <input 
                     type="text"
@@ -881,7 +905,7 @@ const BusinessMatchingApp: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-semibold mb-2">興味・関心</label>
+                <label className="block text-sm font-semibold mb-2">興味・関心 <span className="text-red-500">*</span></label>
                 <div className="flex gap-2 mb-2">
                   <input 
                     type="text"
@@ -919,7 +943,7 @@ const BusinessMatchingApp: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-semibold mb-2">メンバーへのメッセージ</label>
+                <label className="block text-sm font-semibold mb-2">メンバーへのメッセージ <span className="text-red-500">*</span></label>
                 <textarea 
                   name="message"
                   value={formData.message}
@@ -949,7 +973,7 @@ const BusinessMatchingApp: React.FC = () => {
                 次へ
               </button>
             ) : (
-              <button 
+              <button
                 onClick={async () => {
                   const finalSkills = [...formData.skills];
                   if (tempSkill.trim() && !finalSkills.includes(tempSkill.trim())) {
@@ -959,6 +983,21 @@ const BusinessMatchingApp: React.FC = () => {
                   if (tempInterest.trim() && !finalInterests.includes(tempInterest.trim())) {
                     finalInterests.push(tempInterest.trim());
                   }
+
+                  // ステップ3 必須項目チェック
+                  if (finalSkills.length === 0) {
+                    alert('「提供できる価値・スキル」を1つ以上入力してください');
+                    return;
+                  }
+                  if (finalInterests.length === 0) {
+                    alert('「興味・関心」を1つ以上入力してください');
+                    return;
+                  }
+                  if (!formData.message.trim()) {
+                    alert('「メンバーへのメッセージ」を入力してください');
+                    return;
+                  }
+
                   setTempSkill('');
                   setTempInterest('');
 
@@ -2397,6 +2436,7 @@ const BusinessMatchingApp: React.FC = () => {
                       <th className="px-4 py-3 text-left text-sm font-semibold">業種</th>
                       <th className="px-4 py-3 text-left text-sm font-semibold">地域</th>
                       <th className="px-4 py-3 text-left text-sm font-semibold">登録日</th>
+                      <th className="px-4 py-3 text-left text-sm font-semibold">権限</th>
                       <th className="px-4 py-3 text-left text-sm font-semibold">操作</th>
                     </tr>
                   </thead>
@@ -2432,6 +2472,17 @@ const BusinessMatchingApp: React.FC = () => {
                         <td className="px-4 py-3 text-sm">{user.region}</td>
                         <td className="px-4 py-3 text-sm">{user.registeredAt}</td>
                         <td className="px-4 py-3 text-sm">
+                          {user.role === 'admin' ? (
+                            <span className="inline-flex items-center gap-1 bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full text-xs font-bold">
+                              <Shield size={12} /> Admin
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1 bg-gray-100 text-gray-600 px-2 py-1 rounded-full text-xs">
+                              User
+                            </span>
+                          )}
+                        </td>
+                        <td className="px-4 py-3 text-sm">
                           <button
                             onClick={() => {
                               setSelectedUser(user);
@@ -2440,6 +2491,24 @@ const BusinessMatchingApp: React.FC = () => {
                             className="text-blue-600 hover:text-blue-800 font-semibold mr-2"
                           >
                             詳細
+                          </button>
+                          <button
+                            onClick={() => {
+                              const newRole = user.role === 'admin' ? 'user' : 'admin';
+                              const action = newRole === 'admin' ? '管理者に昇格' : '一般ユーザーに降格';
+                              if (!confirm(`${user.name}（${user.email}）を${action}しますか？`)) return;
+                              apiUpdateRole(user.id, newRole).then((res) => {
+                                if (res.ok && res.success) {
+                                  setAdminUsersList((prev) => prev.map((u) => u.id === user.id ? { ...u, role: newRole } : u));
+                                } else {
+                                  alert(res.error || '権限変更に失敗しました');
+                                }
+                              });
+                            }}
+                            disabled={currentUserProfile?.id === user.id}
+                            className={`${user.role === 'admin' ? 'text-orange-600 hover:text-orange-800' : 'text-green-600 hover:text-green-800'} font-semibold mr-2 disabled:opacity-50 disabled:cursor-not-allowed`}
+                          >
+                            {user.role === 'admin' ? '降格' : '昇格'}
                           </button>
                           <button
                             onClick={() => {
