@@ -183,8 +183,15 @@ const BusinessMatchingApp: React.FC = () => {
 
   useEffect(() => {
     if (currentView === 'admin' && isAdmin && getStoredToken()) {
+      setApiError('');
       apiUsers().then((r) => {
-        if (r.ok && r.users) setAdminUsersList(r.users as UserProfile[]);
+        if (r.ok && r.users) {
+          setAdminUsersList(r.users as UserProfile[]);
+        } else {
+          setApiError(`ユーザー一覧の取得に失敗: ${r.error || `status=${r.status}`}`);
+        }
+      }).catch((e) => {
+        setApiError(`ユーザー一覧の取得エラー: ${e instanceof Error ? e.message : String(e)}`);
       });
     }
   }, [currentView, isAdmin, adminRefreshKey]);
@@ -2350,6 +2357,14 @@ const BusinessMatchingApp: React.FC = () => {
                 ログアウト
               </button>
             </div>
+
+            {apiError && (
+              <div className="mb-4 p-4 bg-red-50 border-2 border-red-200 rounded-lg">
+                <p className="text-sm font-semibold text-red-800 mb-2">API通信エラー</p>
+                <pre className="text-sm text-red-700 whitespace-pre-wrap break-all">{apiError}</pre>
+                <button type="button" onClick={() => setApiError('')} className="mt-2 text-sm text-red-600 hover:underline font-semibold">閉じる</button>
+              </div>
+            )}
 
             <div className="grid grid-cols-3 gap-4 mb-8">
               <div className="bg-gradient-to-r from-blue-500 to-blue-600 text-white p-6 rounded-lg">
