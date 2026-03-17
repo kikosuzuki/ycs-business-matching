@@ -199,10 +199,12 @@ const BusinessMatchingApp: React.FC = () => {
     apiMembers()
       .then((res) => {
         if (res.ok && res.users) {
-          const scored = (res.users as UserProfile[]).map((u) => ({
-            ...u,
-            ...calcMatchScores(currentUserProfile, u),
-          }));
+          const scored = (res.users as UserProfile[])
+            .filter((u) => u.role !== 'admin')
+            .map((u) => ({
+              ...u,
+              ...calcMatchScores(currentUserProfile, u),
+            }));
           scored.sort((a, b) => (b.matchScore ?? 0) - (a.matchScore ?? 0));
           setMembersList(scored);
         }

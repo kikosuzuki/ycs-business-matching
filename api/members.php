@@ -26,7 +26,7 @@ $region = trim((string) ($_GET['region'] ?? ''));
 $skill = trim((string) ($_GET['skill'] ?? ''));
 $interest = trim((string) ($_GET['interest'] ?? ''));
 
-$sql = 'SELECT * FROM users WHERE 1=1';
+$sql = "SELECT * FROM users WHERE role != 'admin'";
 $params = [];
 if ($industry !== '') {
     $sql .= ' AND LOWER(industry) LIKE ?';
